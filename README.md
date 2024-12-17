@@ -20,28 +20,84 @@
 ## Getting started
 
 ```cmd
-    pip install nestipy-cli
-    nestipy new my_app
-    cd my_app
-    nestipy start --dev
+    pip install nestipy-socialite
 ```
 
-```
-    ├── src
-    │    ├── __init__.py
-    ├── app_module.py
-    ├── app_controller.py
-    ├── app_service.py
-    ├── main.py
-    ├── requirements.txt
-    ├── README.md
-    
-       
+`app_module.py`
+
+```python
+import os
+
+from dotenv import load_dotenv
+from nestipy.common import Module
+
+from app_controller import AppController
+from app_service import AppService
+from nestipy_socialite import SocialiteModule, SocialiteConfig
+from nestipy_socialite import GoogleOAuthProvider, FacebookOAuthProvider
+
+load_dotenv()
+
+
+@Module(
+    imports=[
+        SocialiteModule.register(
+            SocialiteConfig(
+                providers={
+                    "google": GoogleOAuthProvider(
+                        client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+                        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+                        redirect_uri=os.environ.get("GOOGLE_REDIRECT_URI")
+                    ),
+                    "facebook": FacebookOAuthProvider(
+                        client_id=os.environ.get("FACEBOOK_CLIENT_ID"),
+                        client_secret=os.environ.get("FACEBOOK_CLIENT_SECRET"),
+                        redirect_uri=os.environ.get("FACEBOOK_REDIRECT_URI")
+                    )
+                }
+            )
+        )
+    ],
+    controllers=[AppController],
+    providers=[AppService]
+)
+class AppModule:
+    ...
+
 ```
 
-## Documentation
+`app_controller.py`
 
-View full documentation from [here](https://nestipy.vercel.app).
+```python
+from typing import Annotated
+
+from nestipy.common import Controller, Get, Post, Response, Request
+from nestipy.ioc import Inject, Param, Res, Req
+
+from nestipy_socialite import SocialiteService
+
+
+@Controller('auth')
+class AppController:
+    socialite: Annotated[SocialiteService, Inject()]
+
+    @Get('/{driver}/login')
+    async def get(self, driver: Annotated[str, Param('driver')], res: Annotated[Response, Res()]) -> Response:
+        redirect_url = self.socialite.driver(driver).get_authorization_url()
+        print(redirect_url)
+        return await res.redirect(redirect_url)
+
+    @Get('/{driver}/callback')
+    async def callback(
+            self,
+            req: Annotated[Request, Req()],
+            res: Annotated[Response, Res()],
+            driver: Annotated[str, Param('driver')],
+    ) -> dict:
+        code = req.query_params.get('code')
+        return self.socialite.driver(driver).user(code=code)
+
+```
 
 ## Support
 

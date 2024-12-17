@@ -1,27 +1,29 @@
 from typing import Annotated
 
-from nestipy.common import Controller, Get, Post, Put, Delete
-from nestipy.ioc import Inject, Body, Param
+from nestipy.common import Controller, Get, Post, Response, Request
+from nestipy.ioc import Inject, Param, Res, Req
 
-from app_service import AppService
+from nestipy_socialite import SocialiteService
 
 
-@Controller()
+@Controller('auth')
 class AppController:
-    service: Annotated[AppService, Inject()]
+    socialite: Annotated[SocialiteService, Inject()]
 
-    @Get()
-    async def get(self) -> str:
-        return await self.service.get()
+    @Get('/{driver}/login')
+    async def get(self, driver: Annotated[str, Param('driver')], res: Annotated[Response, Res()]) -> Response:
+        redirect_url = self.socialite.driver(driver).get_authorization_url()
+        print(redirect_url)
+        return await res.redirect(redirect_url)
 
-    @Post()
-    async def post(self, data: Annotated[dict, Body()]) -> str:
-        return await self.service.post(data=data)
-
-    @Put('/{id}')
-    async def put(self, _id: Annotated[int, Param('id')], data: Annotated[dict, Body()]) -> str:
-        return await self.service.put(id_=_id, data=data)
-
-    @Delete('/{id}')
-    async def delete(self, _id: Annotated[int, Param('id')]) -> None:
-        await self.service.delete(id_=_id)
+    @Get('/{driver}/callback')
+    async def callback(
+            self,
+            req: Annotated[Request, Req()],
+            res: Annotated[Response, Res()],
+            driver: Annotated[str, Param('driver')],
+    ) -> dict:
+        code = req.query_params.get('code')
+        print(req.query_params)
+        print(code)
+        return self.socialite.driver(driver).user(code=code)

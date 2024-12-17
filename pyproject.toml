@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "nestipy-socialite"
-version = "0.1.0"
+version = "0.1.1"
 description = "Nestipy pakcage for social network authentification"
 authors = ["Tsiresy Milà <tsiresymila@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.11"
 requests-oauthlib = "^2.0.0"
 
 

@@ -8,6 +8,11 @@ from .providers.google import GoogleOAuthProvider
 from .providers.facebook import FacebookOAuthProvider
 from .providers.x import XOAuthProvider
 from .providers.github import GitHubOAuthProvider
+from .providers.instagram import InstagramOAuthProvider
+from .providers.azure import AzureOAuthProvider
+from .providers.microsoft import MicrosoftOAuthProvider
+from .providers.spotify import SpotifyOAuthProvider
+from .providers.linkedin import LinkedInOAuthProvider
 
 __all__ = [
     "SocialiteModule",
@@ -18,5 +23,10 @@ __all__ = [
     "GoogleOAuthProvider",
     "FacebookOAuthProvider",
     "XOAuthProvider",
-    "GitHubOAuthProvider"
+    "GitHubOAuthProvider",
+    "InstagramOAuthProvider",
+    "SpotifyOAuthProvider",
+    "AzureOAuthProvider",
+    "MicrosoftOAuthProvider",
+    "LinkedInOAuthProvider"
 ]
